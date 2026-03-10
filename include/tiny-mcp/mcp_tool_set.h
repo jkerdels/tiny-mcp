@@ -43,6 +43,8 @@ struct ToolParam {
             return "number";
         else if (std::is_same_v<T,std::string>)
 			return "string";
+        else if (std::is_same_v<T,json>)
+            return "object";
         throw std::domain_error("unsupported type!");
 	}();
 
