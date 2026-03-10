@@ -65,17 +65,11 @@ int main() {
 
 ### 3. Register with Claude Code
 
-Add to your `~/.claude/claude_desktop_config.json` or `.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "my-server": {
-      "command": "/path/to/your-server"
-    }
-  }
-}
+```bash
+claude mcp add --scope user --transport stdio my-server -- /path/to/your-server
 ```
+
+This makes the server available across all your projects. Use `--scope project` to share it with your team via the project's `.mcp.json`. You can verify it's registered by typing `/mcp` inside Claude Code.
 
 ## Defining tools
 
