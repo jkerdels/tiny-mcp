@@ -52,12 +52,16 @@ int main() {
 
     // Main loop: read JSON-RPC from stdin, write responses to stdout
     json message;
-    while (std::cin >> message) {
-        auto response = server.handle_message(message);
-        if (response) {
-            std::cout << *response << "\n";
-            std::cout.flush();
+    try {
+        while (std::cin >> message) {
+            auto response = server.handle_message(message);
+            if (response) {
+                std::cout << *response << "\n";
+                std::cout.flush();
+            }
         }
+    } catch (const json::parse_error&) {
+        // nlohmann::json throws parse_error on EOF instead of setting eofbit
     }
     return 0;
 }
