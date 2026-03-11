@@ -1,0 +1,5 @@
+foreach(test_name test_tool_set test_mcp_server)
+    add_executable(${test_name} ${test_name}.cpp)
+    target_link_libraries(${test_name} PRIVATE tiny-mcp::tiny-mcp doctest::doctest)
+    add_test(NAME ${test_name} COMMAND ${test_name})
+endforeach()

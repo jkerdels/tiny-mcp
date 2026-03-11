@@ -27,3 +27,17 @@ target_link_libraries(tiny-mcp PUBLIC nlohmann_json::nlohmann_json)
 
 # --- Alias for FetchContent consumers ---
 add_library(tiny-mcp::tiny-mcp ALIAS tiny-mcp)
+
+# --- Tests ---
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+    FetchContent_Declare(
+        doctest
+        GIT_REPOSITORY https://github.com/doctest/doctest.git
+        GIT_TAG        v2.4.11
+    )
+    FetchContent_MakeAvailable(doctest)
+
+    enable_testing()
+    add_subdirectory(tests)
+endif()
