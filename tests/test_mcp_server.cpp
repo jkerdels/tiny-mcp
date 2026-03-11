@@ -236,15 +236,31 @@ TEST_CASE("emit_backchannel_event without pending ID enqueues; next call returns
     CHECK(out.str().empty());  // nothing written to ostream
 }
 
-TEST_CASE("include_queued=false defers even when queue is non-empty") {
+TEST_CASE("include_queued=false defers and discards existing queue") {
     std::ostringstream out;
     auto srv = make_server();
     srv.enable_backchannel(out);
 
-    srv.emit_backchannel_event("ignored");
+    srv.emit_backchannel_event("stale-1");
+    srv.emit_backchannel_event("stale-2");
 
+    // include_queued=false: should defer AND discard stale events.
     auto resp = srv.handle_message(make_backchannel_call(23, false));
-    CHECK_FALSE(resp.has_value());  // deferred despite non-empty queue
+    CHECK_FALSE(resp.has_value());  // deferred
+
+    // Now emit a fresh event — should arrive immediately via the pending call.
+    srv.emit_backchannel_event("fresh");
+    REQUIRE_FALSE(out.str().empty());
+    json written = json::parse(out.str());
+    json events = json::parse(written["result"]["content"][0]["text"].get<std::string>());
+    // Only the fresh event; stale ones must be gone.
+    REQUIRE(events.size() == 1);
+    CHECK(events[0] == "fresh");
+
+    // Queue is now empty — next call (include_queued=true) should defer too.
+    out.str("");
+    auto resp2 = srv.handle_message(make_backchannel_call(24));
+    CHECK_FALSE(resp2.has_value());
 }
 
 TEST_CASE("immediate return clears the queue") {

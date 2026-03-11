@@ -100,8 +100,8 @@ json McpToolServer::handle_tools_list(const json& id) {
                     {"include_queued", {
                         {"type",        "boolean"},
                         {"description", "Return any queued events immediately if available. "
-                                        "Set to false to ignore queued events and wait for "
-                                        "the next fresh event only."}
+                                        "Set to false to discard any queued events and wait "
+                                        "only for the next fresh event."}
                     }}
                 }},
                 {"required", json::array()}
@@ -142,6 +142,8 @@ std::optional<json> McpToolServer::handle_tools_call(const json& id, const json&
             json response = {{"content", {{{"type", "text"}, {"text", events.dump()}}}}};
             return json(JsonRpcResponse{id, response});
         }
+        // include_queued=false means "I am not interested in old messages" — discard them.
+        if (!include_queued) event_queue_.clear();
         pending_backchannel_id_ = id;
         return std::nullopt;
     }
@@ -187,7 +189,9 @@ void McpToolServer::enable_backchannel(std::ostream& out, std::size_t max_queue_
                 "  include_queued (bool, default true):\n"
                 "    If true and events were emitted while no backchannel was active,\n"
                 "    those queued events are returned immediately.\n"
-                "    If false, only events emitted after this call are returned.\n"
+                "    If false, any queued events are discarded; only events emitted\n"
+                "    after this call are returned. Use this when you consider cached\n"
+                "    events stale and want a fresh start.\n"
                 "\n"
                 "NOTE: A backchannel_event call always returns at least one event.\n"
                 "      It never returns an empty array.\n";

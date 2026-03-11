@@ -107,6 +107,40 @@ Supported parameter types: `std::string`, `int`, `bool`, `double`.
 
 The input schema (JSON Schema) is generated automatically from the `ToolParam` declarations — no manual JSON needed.
 
+## Backchannel notifications
+
+tiny-mcp supports **server-initiated events**: the server can push messages to the agent without the agent polling. This works by exploiting the long-poll pattern — a background subagent calls the `backchannel_event` tool, which blocks until the server has something to deliver.
+
+### Enable the backchannel
+
+```cpp
+// In your server setup, before entering the main loop:
+server.enable_backchannel();          // unbounded queue, writes to stdout
+// or
+server.enable_backchannel(out, 64);  // ring-buffer of 64 events, custom ostream
+```
+
+This registers two tools automatically:
+- **`backchannel_event`** — the long-poll tool. The agent calls this and waits.
+- **`backchannel_usage`** — returns a usage description for the agent.
+
+### Emit events from the server
+
+```cpp
+server.emit_backchannel_event("something happened");
+```
+
+- If a `backchannel_event` call is pending, the response is written immediately and the pending call is cleared.
+- If no call is pending, the message is enqueued. The next `backchannel_event` call with `include_queued=true` (the default) will drain the queue and return immediately.
+
+### Agent-side pattern
+
+The agent should launch a background subagent that calls `backchannel_event` and waits. When it returns, the foreground agent processes the events and relaunches the background subagent. The `backchannel_usage` tool describes this pattern in detail.
+
+### Ring-buffer semantics
+
+`max_queue_size` (default 0 = unbounded) caps the queue. When full, the oldest entry is dropped (oldest-drop policy).
+
 ## Example
 
 See [`examples/notes/`](examples/notes/) for a complete working example: a simple note storage server with `add_note`, `get_note`, and `list_notes` tools.

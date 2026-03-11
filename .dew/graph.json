@@ -173,6 +173,124 @@
       "priority": 8,
       "state": "done",
       "task": "Collaborative planning: what to build, assumptions, design, acceptance tests"
+    },
+    "fast.verify.debrief": {
+      "changelog": [
+        {
+          "entry": "Node created",
+          "timestamp": "2026-03-11T21:45:58Z"
+        },
+        {
+          "entry": "Added dependency on 'fast.verify.edges'",
+          "timestamp": "2026-03-11T21:46:04Z"
+        },
+        {
+          "entry": "Added dependency on 'fast.verify.docs'",
+          "timestamp": "2026-03-11T21:46:04Z"
+        },
+        {
+          "entry": "Started (via next)",
+          "timestamp": "2026-03-11T21:55:40Z"
+        },
+        {
+          "entry": "Done: Produced fast-debrief.md: 10/10 acceptance tests pass, 2 plan deviations documented (supersede sentinel, include_queued=false queue-clear), README updated, 2 lessons captured.",
+          "timestamp": "2026-03-11T21:59:28Z"
+        }
+      ],
+      "context": "",
+      "dependencies": [
+        {
+          "node_id": "fast.verify.edges",
+          "rationale": ""
+        },
+        {
+          "node_id": "fast.verify.docs",
+          "rationale": ""
+        }
+      ],
+      "effective_priority": 8,
+      "pre_delete_state": "pending",
+      "priority": 8,
+      "state": "done",
+      "task": "Produce fast-debrief.md"
+    },
+    "fast.verify.docs": {
+      "changelog": [
+        {
+          "entry": "Node created",
+          "timestamp": "2026-03-11T21:45:58Z"
+        },
+        {
+          "entry": "Started (via next)",
+          "timestamp": "2026-03-11T21:55:10Z"
+        },
+        {
+          "entry": "Done: Added a Backchannel notifications section to README.md covering enable_backchannel, emit_backchannel_event, agent-side pattern, and ring-buffer semantics.",
+          "timestamp": "2026-03-11T21:55:36Z"
+        }
+      ],
+      "context": "",
+      "dependencies": [],
+      "effective_priority": 5,
+      "pre_delete_state": "pending",
+      "priority": 5,
+      "state": "done",
+      "task": "Update affected documentation"
+    },
+    "fast.verify.edges": {
+      "changelog": [
+        {
+          "entry": "Node created",
+          "timestamp": "2026-03-11T21:45:58Z"
+        },
+        {
+          "entry": "Added dependency on 'fast.verify.tests'",
+          "timestamp": "2026-03-11T21:46:04Z"
+        },
+        {
+          "entry": "Started (via next)",
+          "timestamp": "2026-03-11T21:52:06Z"
+        },
+        {
+          "entry": "Done: Three edge cases verified: queued items survive include_queued=false deferral; ring buffer retains all items at exactly max_queue_size; emit before enable is a safe no-op. All pass.",
+          "timestamp": "2026-03-11T21:55:08Z"
+        }
+      ],
+      "context": "",
+      "dependencies": [
+        {
+          "node_id": "fast.verify.tests",
+          "rationale": ""
+        }
+      ],
+      "effective_priority": 7,
+      "pre_delete_state": "pending",
+      "priority": 7,
+      "state": "done",
+      "task": "Probe 2-3 edge cases"
+    },
+    "fast.verify.tests": {
+      "changelog": [
+        {
+          "entry": "Node created",
+          "timestamp": "2026-03-11T21:45:58Z"
+        },
+        {
+          "entry": "Started (via next)",
+          "timestamp": "2026-03-11T21:46:06Z"
+        },
+        {
+          "entry": "Done: All 20 McpToolServer tests pass (including all 11 backchannel cases) and all 10 tool_set tests pass — 30/30 total. Every plan acceptance criterion has a corresponding passing test.",
+          "timestamp": "2026-03-11T21:52:02Z"
+        }
+      ],
+      "context": "",
+      "dependencies": [],
+      "effective_priority": 9,
+      "pre_delete_state": "pending",
+      "priority": 9,
+      "state": "done",
+      "task": "Execute acceptance tests against plan criteria"
     }
   },
   "version": 1
