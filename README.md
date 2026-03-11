@@ -45,7 +45,7 @@ int main() {
     server.tools().register_tool<GreetParams>(
         "greet",
         "Say hello to someone",
-        [](GreetParams& p) -> std::string {
+        [](GreetParams& p) -> std::expected<std::string,std::string> {
             return "Hello, " + std::string(std::get<0>(p)) + "!";
         }
     );
@@ -89,15 +89,19 @@ using Params = std::tuple<
 server.tools().register_tool<Params>(
     "search",
     "Search for items",
-    [](Params& p) -> std::string {
+    [](Params& p) -> std::expected<std::string,std::string> {
         auto& query = std::get<0>(p);  // std::string
         auto& limit = std::get<1>(p);  // int
         auto& exact = std::get<2>(p);  // bool
         // ... your logic here ...
+        if (query.value.empty())
+            return std::unexpected("query must not be empty");
         return "results";
     }
 );
 ```
+
+Tool callbacks return `std::expected<std::string,std::string>`. Return a plain `std::string` for success (implicit conversion), or `std::unexpected("reason")` to signal a tool error back to the calling agent.
 
 Supported parameter types: `std::string`, `int`, `bool`, `double`.
 

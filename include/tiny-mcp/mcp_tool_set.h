@@ -90,9 +90,9 @@ public:
 
 	template<tuple_like P>
 	void register_tool(
-		const std::string             &tool_name,
-		const std::string             &tool_description,
-		std::function<std::string(P&)> tool
+		const std::string                                          &tool_name,
+		const std::string                                          &tool_description,
+		std::function<std::expected<std::string,std::string>(P&)>  tool
 	) {
 		tools.insert_or_assign(tool_name, tool_t {
 			tool_name,

@@ -30,7 +30,7 @@ int main() {
     server.tools().register_tool<AddParams>(
         "add_note",
         "Store a note using its title as key",
-        [&store](AddParams& params) -> std::string {
+        [&store](AddParams& params) -> std::expected<std::string,std::string> {
             const auto& title = std::get<0>(params);
             const auto& body  = std::get<1>(params);
             store.add(title, body);
@@ -45,7 +45,7 @@ int main() {
     server.tools().register_tool<GetParams>(
         "get_note",
         "Retrieve a stored note by title",
-        [&store](GetParams& params) -> std::string {
+        [&store](GetParams& params) -> std::expected<std::string,std::string> {
             const auto& title = std::get<0>(params);
             return store.get(title).value_or("No note found with that title.");
         }
@@ -56,7 +56,7 @@ int main() {
     server.tools().register_tool<ListParams>(
         "list_notes",
         "List all stored note titles",
-        [&store](ListParams&) -> std::string {
+        [&store](ListParams&) -> std::expected<std::string,std::string> {
             auto titles = store.list();
             if (titles.empty()) return "No notes stored.";
             std::string result;
