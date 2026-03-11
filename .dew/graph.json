@@ -1,5 +1,124 @@
 {
   "nodes": {
+    "fast.build.assumptions": {
+      "changelog": [
+        {
+          "entry": "Node created",
+          "timestamp": "2026-03-11T21:35:06Z"
+        },
+        {
+          "entry": "Started (via next)",
+          "timestamp": "2026-03-11T21:35:13Z"
+        },
+        {
+          "entry": "Done: No pre-implementation blockers — all type-change assumptions confirmed against actual source code.",
+          "timestamp": "2026-03-11T21:36:01Z"
+        }
+      ],
+      "context": "",
+      "dependencies": [],
+      "effective_priority": 9,
+      "pre_delete_state": "pending",
+      "priority": 9,
+      "state": "done",
+      "task": "Scan for pre-implementation blockers; validate if warranted"
+    },
+    "fast.build.implement": {
+      "changelog": [
+        {
+          "entry": "Node created",
+          "timestamp": "2026-03-11T21:35:06Z"
+        },
+        {
+          "entry": "Added dependency on 'fast.build.structure'",
+          "timestamp": "2026-03-11T21:35:10Z"
+        },
+        {
+          "entry": "Started (via next)",
+          "timestamp": "2026-03-11T21:39:45Z"
+        },
+        {
+          "entry": "Done: Implementation complete — mcp_server.h and mcp_server.cpp modified, 8 new tests in test_mcp_server.cpp; all 18 tests pass.",
+          "timestamp": "2026-03-11T21:39:48Z"
+        }
+      ],
+      "context": "",
+      "dependencies": [
+        {
+          "node_id": "fast.build.structure",
+          "rationale": ""
+        }
+      ],
+      "effective_priority": 7,
+      "pre_delete_state": "pending",
+      "priority": 7,
+      "state": "done",
+      "task": "Write implementation code"
+    },
+    "fast.build.structure": {
+      "changelog": [
+        {
+          "entry": "Node created",
+          "timestamp": "2026-03-11T21:35:06Z"
+        },
+        {
+          "entry": "Added dependency on 'fast.build.assumptions'",
+          "timestamp": "2026-03-11T21:35:10Z"
+        },
+        {
+          "entry": "Started (via next)",
+          "timestamp": "2026-03-11T21:36:02Z"
+        },
+        {
+          "entry": "Done: Structure confirmed by user — three files, MethodHandler typedef change, two new public methods, backchannel intercept in handle_tools_call.",
+          "timestamp": "2026-03-11T21:37:31Z"
+        }
+      ],
+      "context": "",
+      "dependencies": [
+        {
+          "node_id": "fast.build.assumptions",
+          "rationale": ""
+        }
+      ],
+      "effective_priority": 8,
+      "pre_delete_state": "pending",
+      "priority": 8,
+      "state": "done",
+      "task": "Define concrete implementation structure; get user agreement"
+    },
+    "fast.build.summary": {
+      "changelog": [
+        {
+          "entry": "Node created",
+          "timestamp": "2026-03-11T21:35:06Z"
+        },
+        {
+          "entry": "Added dependency on 'fast.build.implement'",
+          "timestamp": "2026-03-11T21:35:10Z"
+        },
+        {
+          "entry": "Started (via next)",
+          "timestamp": "2026-03-11T21:39:50Z"
+        },
+        {
+          "entry": "Done: Build complete: 3 files modified, 20/20 tests pass. Two post-review fixes: early-exit guard in emit_backchannel_event, supersede-first-caller logic for concurrent backchannel calls.",
+          "timestamp": "2026-03-11T21:44:54Z"
+        }
+      ],
+      "context": "",
+      "dependencies": [
+        {
+          "node_id": "fast.build.implement",
+          "rationale": ""
+        }
+      ],
+      "effective_priority": 6,
+      "pre_delete_state": "pending",
+      "priority": 6,
+      "state": "done",
+      "task": "Write build summary: what was built, deviations, limitations"
+    },
     "fast.plan.artifact": {
       "changelog": [
         {

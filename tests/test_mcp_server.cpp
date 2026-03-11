@@ -148,3 +148,199 @@ TEST_CASE("ping method returns empty result") {
 }
 
 } // TEST_SUITE
+
+// ---------------------------------------------------------------------------
+// Backchannel helpers
+// ---------------------------------------------------------------------------
+
+static json make_backchannel_call(int id, bool include_queued = true) {
+    return make_request(id, "tools/call", {
+        {"name",      "backchannel_event"},
+        {"arguments", {{"include_queued", include_queued}}}
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Backchannel tests
+// ---------------------------------------------------------------------------
+
+TEST_SUITE("McpToolServer.backchannel") {
+
+TEST_CASE("tools/list includes both backchannel tools after enable_backchannel") {
+    std::ostringstream out;
+    auto srv = make_server();
+    srv.enable_backchannel(out);
+
+    auto resp = srv.handle_message(make_request(10, "tools/list"));
+    REQUIRE(resp.has_value());
+
+    const json& tools = (*resp)["result"]["tools"];
+    REQUIRE(tools.is_array());
+
+    auto has_tool = [&](const std::string& name) {
+        for (const auto& t : tools)
+            if (t["name"] == name) return true;
+        return false;
+    };
+    CHECK(has_tool("backchannel_event"));
+    CHECK(has_tool("backchannel_usage"));
+}
+
+TEST_CASE("backchannel_event defers when queue is empty") {
+    std::ostringstream out;
+    auto srv = make_server();
+    srv.enable_backchannel(out);
+
+    auto resp = srv.handle_message(make_backchannel_call(20));
+    CHECK_FALSE(resp.has_value());
+    CHECK(out.str().empty());  // nothing written yet
+}
+
+TEST_CASE("emit_backchannel_event with pending ID writes response and clears pending") {
+    std::ostringstream out;
+    auto srv = make_server();
+    srv.enable_backchannel(out);
+
+    srv.handle_message(make_backchannel_call(21));  // deferred
+    srv.emit_backchannel_event("hello");
+
+    REQUIRE_FALSE(out.str().empty());
+    json written = json::parse(out.str());
+    CHECK(written["id"] == 21);
+    CHECK(written["jsonrpc"] == "2.0");
+    const std::string text = written["result"]["content"][0]["text"];
+    json events = json::parse(text);
+    REQUIRE(events.is_array());
+    REQUIRE(events.size() == 1);
+    CHECK(events[0] == "hello");
+
+    // Pending ID must be cleared — another emit goes to the queue.
+    out.str("");
+    srv.emit_backchannel_event("queued");
+    CHECK(out.str().empty());
+}
+
+TEST_CASE("emit_backchannel_event without pending ID enqueues; next call returns immediately") {
+    std::ostringstream out;
+    auto srv = make_server();
+    srv.enable_backchannel(out);
+
+    srv.emit_backchannel_event("x");
+
+    auto resp = srv.handle_message(make_backchannel_call(22));
+    REQUIRE(resp.has_value());  // returned immediately
+    const std::string text = (*resp)["result"]["content"][0]["text"];
+    json events = json::parse(text);
+    REQUIRE(events.is_array());
+    CHECK(events[0] == "x");
+    CHECK(out.str().empty());  // nothing written to ostream
+}
+
+TEST_CASE("include_queued=false defers even when queue is non-empty") {
+    std::ostringstream out;
+    auto srv = make_server();
+    srv.enable_backchannel(out);
+
+    srv.emit_backchannel_event("ignored");
+
+    auto resp = srv.handle_message(make_backchannel_call(23, false));
+    CHECK_FALSE(resp.has_value());  // deferred despite non-empty queue
+}
+
+TEST_CASE("immediate return clears the queue") {
+    std::ostringstream out;
+    auto srv = make_server();
+    srv.enable_backchannel(out);
+
+    srv.emit_backchannel_event("a");
+    srv.emit_backchannel_event("b");
+
+    auto resp = srv.handle_message(make_backchannel_call(24));
+    REQUIRE(resp.has_value());
+    const std::string text = (*resp)["result"]["content"][0]["text"];
+    json events = json::parse(text);
+    CHECK(events.size() == 2);
+
+    // Queue is now empty — next call defers.
+    auto resp2 = srv.handle_message(make_backchannel_call(25));
+    CHECK_FALSE(resp2.has_value());
+}
+
+TEST_CASE("ring-buffer overflow: oldest event is dropped") {
+    std::ostringstream out;
+    auto srv = make_server();
+    srv.enable_backchannel(out, /*max_queue_size=*/2);
+
+    srv.emit_backchannel_event("first");
+    srv.emit_backchannel_event("second");
+    srv.emit_backchannel_event("third");  // should drop "first"
+
+    auto resp = srv.handle_message(make_backchannel_call(26));
+    REQUIRE(resp.has_value());
+    const std::string text = (*resp)["result"]["content"][0]["text"];
+    json events = json::parse(text);
+    REQUIRE(events.size() == 2);
+    CHECK(events[0] == "second");
+    CHECK(events[1] == "third");
+}
+
+TEST_CASE("backchannel_usage returns non-empty string") {
+    std::ostringstream out;
+    auto srv = make_server();
+    srv.enable_backchannel(out);
+
+    auto resp = srv.handle_message(make_request(27, "tools/call", {
+        {"name",      "backchannel_usage"},
+        {"arguments", json::object()}
+    }));
+
+    REQUIRE(resp.has_value());
+    const json& result = (*resp)["result"];
+    CHECK_FALSE(result.contains("isError"));
+    const std::string text = result["content"][0]["text"];
+    CHECK_FALSE(text.empty());
+}
+
+TEST_CASE("backchannel_event without enable_backchannel returns isError") {
+    auto srv = make_server();
+    auto resp = srv.handle_message(make_backchannel_call(28));
+    REQUIRE(resp.has_value());
+    CHECK((*resp)["result"]["isError"] == true);
+}
+
+TEST_CASE("emit_backchannel_event before enable_backchannel does nothing") {
+    auto srv = make_server();
+    // No enable_backchannel() call — must not crash or do anything.
+    srv.emit_backchannel_event("should be ignored");
+}
+
+TEST_CASE("second backchannel_event supersedes first pending call") {
+    std::ostringstream out;
+    auto srv = make_server();
+    srv.enable_backchannel(out);
+
+    // First call defers.
+    auto resp1 = srv.handle_message(make_backchannel_call(30));
+    CHECK_FALSE(resp1.has_value());
+
+    // Second call: first should receive "backchannel_superseded", second defers.
+    auto resp2 = srv.handle_message(make_backchannel_call(31));
+    CHECK_FALSE(resp2.has_value());
+
+    // The superseded response for id=30 must have been written to the stream.
+    REQUIRE_FALSE(out.str().empty());
+    json written = json::parse(out.str());
+    CHECK(written["id"] == 30);
+    json events = json::parse(written["result"]["content"][0]["text"].get<std::string>());
+    REQUIRE(events.size() == 1);
+    CHECK(events[0] == "backchannel_superseded");
+
+    // The new pending call (id=31) should be fulfilled by emit.
+    out.str("");
+    srv.emit_backchannel_event("real event");
+    REQUIRE_FALSE(out.str().empty());
+    json written2 = json::parse(out.str());
+    CHECK(written2["id"] == 31);
+}
+
+} // TEST_SUITE(McpToolServer.backchannel)
