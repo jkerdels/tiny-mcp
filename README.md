@@ -137,6 +137,15 @@ server.emit_backchannel_event("something happened");
 
 The agent should launch a background subagent that calls `backchannel_event` and waits. When it returns, the foreground agent processes the events and relaunches the background subagent. The `backchannel_usage` tool describes this pattern in detail.
 
+> **Permissions**: Claude Code subagents do not automatically inherit MCP tool permissions. Without explicit allowlisting, the background subagent's `backchannel_event` call will be denied. Add the tool (or a wildcard for all tools on the server) to your project's `.claude/settings.local.json`:
+> ```json
+> {
+>   "permissions": {
+>     "allow": ["mcp__your-server-name__*"]
+>   }
+> }
+> ```
+
 ### Ring-buffer semantics
 
 `max_queue_size` (default 0 = unbounded) caps the queue. When full, the oldest entry is dropped (oldest-drop policy).
