@@ -1,0 +1,60 @@
+{
+  "nodes": {
+    "fast.plan.artifact": {
+      "changelog": [
+        {
+          "entry": "Node created",
+          "timestamp": "2026-03-11T21:02:24Z"
+        },
+        {
+          "entry": "Added dependency on 'fast.plan.discuss'",
+          "timestamp": "2026-03-11T21:02:27Z"
+        },
+        {
+          "entry": "Started (via next)",
+          "timestamp": "2026-03-11T21:29:18Z"
+        },
+        {
+          "entry": "Done: fast-plan.md written: full design for backchannel capability including API, control flow, ring-buffer semantics, and 10 acceptance tests.",
+          "timestamp": "2026-03-11T21:30:09Z"
+        }
+      ],
+      "context": "",
+      "dependencies": [
+        {
+          "node_id": "fast.plan.discuss",
+          "rationale": ""
+        }
+      ],
+      "effective_priority": 10,
+      "pre_delete_state": "pending",
+      "priority": 10,
+      "state": "done",
+      "task": "Produce fast-plan.md"
+    },
+    "fast.plan.discuss": {
+      "changelog": [
+        {
+          "entry": "Node created",
+          "timestamp": "2026-03-11T21:02:24Z"
+        },
+        {
+          "entry": "Started (via next)",
+          "timestamp": "2026-03-11T21:02:28Z"
+        },
+        {
+          "entry": "Done: Agreed on full design: deferred response via stored JSON-RPC ID, ring-buffer event queue (configurable size, oldest-drop), two registered tools (backchannel_event + backchannel_usage), MethodHandler typedef changes to std::optional<json>.",
+          "timestamp": "2026-03-11T21:29:16Z"
+        }
+      ],
+      "context": "",
+      "dependencies": [],
+      "effective_priority": 8,
+      "pre_delete_state": "pending",
+      "priority": 8,
+      "state": "done",
+      "task": "Collaborative planning: what to build, assumptions, design, acceptance tests"
+    }
+  },
+  "version": 1
+}
